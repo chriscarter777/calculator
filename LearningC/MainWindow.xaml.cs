@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
+using System.Windows.Resources;
 using System.Windows.Shapes;
 
 namespace LearningC
@@ -25,13 +26,12 @@ namespace LearningC
             InitializeComponent();
         }
 
-        public double a;
         public string aStr;
-        public double b;
         public string bStr;
-        public string op;
-        public double result;
+        public string opStr;
+        public string resultStr;
         public bool pointFlag = false;
+        public bool opFlag = false;
 
 
         private void number_Click(object sender, RoutedEventArgs e)
@@ -44,6 +44,11 @@ namespace LearningC
             PointPress();
         }
 
+        private void clear_Click(object sender, RoutedEventArgs e)
+        {
+            ClearPress(ref aStr, ref opStr, ref bStr);
+        }
+
         private void op_Click(object sender, RoutedEventArgs e)
         {
             OpPress(sender);
@@ -51,22 +56,27 @@ namespace LearningC
 
         private void equals_Click(object sender, RoutedEventArgs e)
         {
-            if (aStr != null && op != null && bStr != null)
+            if (aStr != null && opStr != null && bStr != null)
             {
                 EqualsPress();
             }
         }
 
-        private void exit_Click(object sender, RoutedEventArgs e)
+        private void clearAll_Click(object sender, RoutedEventArgs e)
         {
-            ExitPress();
+            ClearAllPress();
+        }
+
+        private void bg_Click(object sender, RoutedEventArgs e)
+        {
+            BgPress(sender);
         }
 
         private void NumberPress(object sender)
         {
             Button b = (Button)sender;
             string buttonVal = b.Content.ToString();
-            if (op == null)
+            if (opStr == null)
             {
                 aStr += buttonVal;
                 txtA.Text = aStr;
@@ -80,125 +90,197 @@ namespace LearningC
 
         private void PointPress()
         {
-            if(pointFlag == false && op == null)
+            if(pointFlag == false && opStr == null)
             {
                 aStr += ".";
                 txtA.Text = aStr;
                 pointFlag = true;
             }
-            else if(pointFlag == false && op != null)
+            else if(pointFlag == false && opStr != null)
             {
-                bStr += "+";
+                bStr += ".";
                 txtB.Text = bStr;
                 pointFlag = true;
             }
+        }
+
+        private void ClearPress(ref string aStr, ref string opStr, ref string bStr)
+        {
+            if(opStr == null && bStr == null)
+            {
+                aStr = null;
+                txtA.Text = null;
+                pointFlag = false;
+            }
+            else if(opStr != null && bStr == null)
+            {
+                opStr = null;
+                txtOp.Text = null;
+                opFlag = false;
+            }
+            else if(bStr != null)
+            {
+                bStr = null;
+                txtB.Text = null;
+                pointFlag = false;
+            }
+
         }
 
         private void OpPress (object sender)
         {
             Button b = (Button)sender;
             string buttonVal = b.Content.ToString();
-            if(aStr != null && bStr == null)
+            if(aStr != null && bStr == null && opFlag == false)
             {
-                op = buttonVal;
-                txtOp.Text = op;
-                txtShow.Text += aStr + "  " + op + "  ";
+                opStr = buttonVal;
+                txtOp.Text = opStr;
+                txtShow.Text += aStr + "  " + opStr + "  ";
                 pointFlag = false;
+                opFlag = true;
             }
         }
 
         private void EqualsPress()
         {
-            switch (op)
+            switch (opStr)
             {
                 case "+":
                 {
-                    result = double.Parse(aStr) + double.Parse(bStr);
-                    txtShow.Text += bStr + "\n = " + (result.ToString()) + "\n\n";
+                    resultStr = Add (aStr, bStr);
+                    txtShow.Text += bStr + "\n = " + resultStr + "\n\n";
                     break;
                 }
                 case "-":
                 {
-                    result = double.Parse(aStr) - double.Parse(bStr);
-                    txtShow.Text += bStr + "\n = " + (result.ToString()) + "\n\n";
+                    resultStr = Subtract(aStr, bStr);
+                    txtShow.Text += bStr + "\n = " + resultStr + "\n\n";
                     break;
                 }
                 case "*":
                 {
-                    result = double.Parse(aStr) * double.Parse(bStr);
-                    txtShow.Text += bStr + "\n = " + (result.ToString()) + "\n\n";
+                    resultStr = Multiply(aStr, bStr);
+                    txtShow.Text += bStr + "\n = " + resultStr + "\n\n";
                     break;
                }
                 case "/":
                 {
-                    b = double.Parse(bStr);
-                    if (b != 0)
-                    {
-                        result = double.Parse(aStr) / b;
-                        txtShow.Text += bStr + "\n = " + (result.ToString()) + "\n\n";
-                        }
-                        else
-                    {
-                        txtShow.Text += bStr + "\nERROR: divide by zero\n";
-                    }
+                    resultStr = Divide(aStr, bStr);
+                    txtShow.Text += bStr + "\n" + resultStr + "\n\n";
                     break;
-                }
+                    }
                 case "^":
                 {
-                    result = Math.Pow(double.Parse(aStr) , double.Parse(bStr));
-                        txtShow.Text += bStr + "\n" + (result.ToString()) + "\n\n";
-                        break;
+                    resultStr = Exponent(aStr, bStr);
+                    txtShow.Text += bStr + "\n" + resultStr + "\n\n";
+                    break;
                 }
             }
             aStr = null;
-            op = null;
+            opStr = null;
             bStr = null;
             txtA.Text = null;
             txtOp.Text = null;
             txtB.Text = null;
-            result = 0;
+            pointFlag = false;
+            opFlag = false;
+            resultStr = null;
         }
 
-        private void ExitPress()
+        private void ClearAllPress()
         {
-            MessageBox.Show("Exit Clicked");
+            aStr = null;
+            opStr = null;
+            bStr = null;
             txtA.Text = null;
-            txtOp.Text =null;
+            txtOp.Text = null;
+            txtB.Text = null;
             txtShow.Text = null;
+            pointFlag = false;
+            opFlag = false;
+            resultStr = null;
         }
 
-        private double Add (ref double a, ref double b, ref string flag)
+        private void BgPress(object sender)
         {
-            return a + b;
-        }
-
-        private double Subtract(double a, double b, ref string flag)
-        {
-            return a - b;
-        }
-
-        private double Multiply(double a, double b, ref string flag)
-        {
-            return a * b;
-        }
-
-        private double Divide(double a, double b, ref string flag)
-        {
-            if (b != 0)
+            Button b = (Button)sender;
+            string bName = b.Name;
+            switch (bName)
             {
-                return (double)(a / b);
+                case "bg1":
+                {
+                Uri resource = new Uri("PinkMist.jpg", UriKind.Relative);
+                StreamResourceInfo streamInfo = Application.GetResourceStream(resource);
+                BitmapFrame temp = BitmapFrame.Create(streamInfo.Stream);
+                var brush = new ImageBrush();
+                brush.ImageSource = temp;
+                calcFace.Background = brush;
+                break;
+                }
+                case "bg2":
+                {
+                    Uri resource = new Uri("redness.jpg", UriKind.Relative);
+                    StreamResourceInfo streamInfo = Application.GetResourceStream(resource);
+                    BitmapFrame temp = BitmapFrame.Create(streamInfo.Stream);
+                    var brush = new ImageBrush();
+                    brush.ImageSource = temp;
+                    calcFace.Background = brush;
+                    break;
+                    }
+                case "bg3":
+                {
+                    Uri resource = new Uri("colorful.jpg", UriKind.Relative);
+                    StreamResourceInfo streamInfo = Application.GetResourceStream(resource);
+                    BitmapFrame temp = BitmapFrame.Create(streamInfo.Stream);
+                    var brush = new ImageBrush();
+                    brush.ImageSource = temp;
+                    calcFace.Background = brush;
+                    break;
+                    }
+                case "bg4":
+                {
+                    Uri resource = new Uri("lion.jpg", UriKind.Relative);
+                    StreamResourceInfo streamInfo = Application.GetResourceStream(resource);
+                    BitmapFrame temp = BitmapFrame.Create(streamInfo.Stream);
+                    var brush = new ImageBrush();
+                    brush.ImageSource = temp;
+                    calcFace.Background = brush;
+                    break;
+                    }
+            }
+        }
+
+        private string Add ( string a,  string b)
+        {
+            return (double.Parse(aStr) + double.Parse(bStr)).ToString();
+        }
+
+        private string Subtract(string a, string b)
+        {
+            return (double.Parse(aStr) - double.Parse(bStr)).ToString();
+        }
+
+        private string Multiply(string a, string b)
+        {
+            return (double.Parse(aStr) * double.Parse(bStr)).ToString();
+        }
+
+        private string Divide(string a, string b)
+        {
+            double dblB = double.Parse(bStr);
+            if (dblB != 0)
+            {
+                return (double.Parse(aStr) / dblB).ToString();
             }
             else
             {
-                return 0;
-                flag = "divide by zero";
+                return "ERROR: divide by zero";
             }
         }
 
-        //private double Display(double result, ref string flag)
-        //{
-        //    return a * b;
-        //}
-
+        private string Exponent(string a, string b)
+        {
+            return (Math.Pow(double.Parse(aStr) , double.Parse(bStr))).ToString();
+        }
     }
 }
